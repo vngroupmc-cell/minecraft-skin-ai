@@ -19,8 +19,7 @@
 body{
   margin:0;
   min-height:100vh;
-  background:
-    radial-gradient(circle at top, #1b3b8f, var(--bg));
+  background: radial-gradient(circle at top, #1b3b8f, var(--bg));
   display:flex;
   justify-content:center;
   align-items:center;
@@ -36,14 +35,8 @@ body{
   box-shadow:0 20px 60px rgba(0,0,0,.5);
 }
 
-h1{
-  margin:0 0 6px;
-  font-size:24px;
-}
-.subtitle{
-  opacity:.85;
-  margin-bottom:18px;
-}
+h1{ margin:0 0 6px; font-size:24px; }
+.subtitle{ opacity:.85; margin-bottom:18px; }
 
 input{
   width:100%;
@@ -54,10 +47,7 @@ input{
   margin-bottom:14px;
   outline:none;
 }
-
-input:focus{
-  box-shadow:0 0 0 3px rgba(125,220,255,.5);
-}
+input:focus{ box-shadow:0 0 0 3px rgba(125,220,255,.5); }
 
 .btn{
   width:100%;
@@ -71,13 +61,9 @@ input:focus{
   transition:.25s;
   margin-top:10px;
 }
-
-.btn.small{background:var(--btn2);font-weight:500}
-
-.btn:hover{
-  transform:translateY(-2px);
-  box-shadow:0 10px 25px rgba(125,220,255,.45);
-}
+.btn.small{ background:var(--btn2); font-weight:500; }
+.btn:hover{ transform:translateY(-2px); box-shadow:0 10px 25px rgba(125,220,255,.45); }
+.btn:disabled{ background:#555; cursor:not-allowed; transform:none; box-shadow:none; }
 
 .divider{
   height:1px;
@@ -106,11 +92,12 @@ input:focus{
 .modal{
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,.7);
+  background:rgba(0,0,0,.8);
   display:none;
   justify-content:center;
   align-items:center;
   z-index:10;
+  backdrop-filter: blur(4px);
 }
 .modal-content{
   background:#08183d;
@@ -119,16 +106,15 @@ input:focus{
   width:85%;
   max-width:320px;
   text-align:center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 .modal img{
   width:100%;
   border-radius:14px;
   margin-bottom:10px;
+  border: 2px solid rgba(255,255,255,0.1);
 }
-.close{
-  opacity:.8;
-  cursor:pointer;
-}
+.close{ opacity:.8; cursor:pointer; padding:10px; background:rgba(255,255,255,0.1); border-radius:10px; }
 </style>
 </head>
 
@@ -138,32 +124,31 @@ input:focus{
   <h1>🌙 AI Minecraft Skin</h1>
   <div class="subtitle">พิมพ์ลักษณะสกิน (ภาษาไทย)</div>
 
-  <input id="prompt" placeholder="ผู้ชาย ผมดำ เสื้อฮู้ด"/>
-  <input id="name" placeholder="ชื่อสกิน"/>
+  <input id="prompt" placeholder="เช่น: ผู้ชาย ผมดำ เสื้อฮู้ดสีฟ้า"/>
+  <input id="name" placeholder="ชื่อสกิน (เช่น: MySkin)"/>
 
-  <button class="btn" onclick="generateSkin()">✨ สร้างสกิน 512</button>
+  <button class="btn" id="genBtn" onclick="generateSkin()">✨ สร้างสกิน AI</button>
 
   <div class="loading" id="loading">
     <div class="spinner"></div>
-    กำลังสร้างสกิน...
+    <span>กำลังเชื่อมต่อเซิร์ฟเวอร์...</span>
   </div>
 
   <div class="divider"></div>
 
   <button class="btn small" onclick="openModal('skin')">👁 ดูสกิน</button>
-  <button class="btn small" onclick="openModal('fanart')">🎨 แฟนอาร์ต</button>
+  <button class="btn small" onclick="openModal('fanart')">🎨 ดูแฟนอาร์ต</button>
 
   <div class="divider"></div>
 
-  <button class="btn small">🏅 โหลดสกิน</button>
-  <button class="btn small">🏅 โหลดแฟนอาร์ต</button>
+  <button class="btn small" onclick="downloadImage('skin')">🏅 โหลดสกิน</button>
+  <button class="btn small" onclick="downloadImage('fanart')">🏅 โหลดแฟนอาร์ต</button>
 </div>
 
-<!-- MODAL -->
 <div class="modal" id="modal">
   <div class="modal-content">
     <img id="modalImg" src="" />
-    <div class="close" onclick="closeModal()">ปิด</div>
+    <div class="close" onclick="closeModal()">ปิดหน้าต่าง</div>
   </div>
 </div>
 
@@ -174,13 +159,18 @@ let fanartImg = "";
 async function generateSkin(){
   const prompt = document.getElementById("prompt").value;
   const name = document.getElementById("name").value;
+  const loading = document.getElementById("loading");
+  const btn = document.getElementById("genBtn");
 
   if(!prompt){
     alert("กรุณาใส่ลักษณะสกิน");
     return;
   }
 
-  document.getElementById("loading").style.display = "block";
+  // เริ่มโหลด
+  loading.style.display = "block";
+  btn.disabled = true;
+  btn.innerText = "กำลังสร้าง...";
 
   try{
     const res = await fetch("https://minecraft-skin-ai.onrender.com/api/generate",{
@@ -190,28 +180,37 @@ async function generateSkin(){
       },
       body:JSON.stringify({
         prompt: prompt,
-        name: name
+        name: name || "minecraft_skin"
       })
     });
 
+    if(!res.ok) throw new Error("Server Error");
+
     const data = await res.json();
 
-    // backend ต้องส่งกลับมาแบบนี้
-    // { skinUrl: "...", fanartUrl: "..." }
-
+    // สมมติ Backend ส่งกลับมาเป็น { skinUrl: "...", fanartUrl: "..." }
+    // หาก backend ส่ง key อื่นมา ให้แก้ตรงนี้ครับ
     skinImg = data.skinUrl;
     fanartImg = data.fanartUrl;
 
-    alert("สร้างสกินเสร็จแล้ว!");
-  }catch(err){
-    alert("เกิดข้อผิดพลาด");
-    console.error(err);
-  }
+    alert("สร้างสกินเสร็จแล้ว! กดปุ่มดูรูปได้เลย");
 
-  document.getElementById("loading").style.display = "none";
+  } catch(err){
+    alert("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์");
+    console.error(err);
+  } finally {
+    // จบการทำงาน ไม่ว่าจะสำเร็จหรือล้มเหลว
+    loading.style.display = "none";
+    btn.disabled = false;
+    btn.innerText = "✨ สร้างสกิน AI";
+  }
 }
 
 function openModal(type){
+  // เช็คว่ามีรูปหรือยัง
+  if(type === 'skin' && !skinImg){ alert("ยังไม่มีสกินครับ กรุณาสร้างก่อน"); return; }
+  if(type === 'fanart' && !fanartImg){ alert("ยังไม่มีแฟนอาร์ตครับ"); return; }
+
   document.getElementById("modal").style.display="flex";
   document.getElementById("modalImg").src =
     type === "skin" ? skinImg : fanartImg;
@@ -220,7 +219,40 @@ function openModal(type){
 function closeModal(){
   document.getElementById("modal").style.display="none";
 }
+
+// ฟังก์ชันดาวน์โหลด (เพิ่มเติมเพื่อให้ปุ่มทำงานได้)
+async function downloadImage(type) {
+  const url = (type === 'skin') ? skinImg : fanartImg;
+  
+  if (!url) {
+    alert("ยังไม่มีรูปภาพให้ดาวน์โหลด");
+    return;
+  }
+
+  try {
+    const fileName = document.getElementById("name").value || 'skin';
+    
+    // ดึงรูปมาเป็น Blob เพื่อบังคับโหลด
+    const response = await fetch(url);
+    const blob = await response.blob();
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `${fileName}_${type}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } catch (error) {
+    console.error(error);
+    // กรณีติด CORS ให้เปิดแท็บใหม่แทน
+    window.open(url, '_blank');
+  }
+}
+
+// ปิด Modal เมื่อคลิกพื้นหลัง
+window.onclick = function(e){
+  if(e.target == document.getElementById("modal")) closeModal();
+}
 </script>
 
 </body>
-    </html>
+</html>
