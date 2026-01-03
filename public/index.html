@@ -168,45 +168,27 @@ input:focus{
 </div>
 
 <script>
-let skinImg = "https://dummyimage.com/512x512/9bdcff/000.png&text=Skin+512";
-let fanartImg = "https://dummyimage.com/512x512/6bbcd6/000.png&text=Fanart";
-
-function generateSkin(){
-  document.getElementById("loading").style.display="block";
-  setTimeout(()=>{
-    document.getElementById("loading").style.display="none";
-    alert("สร้างสกินเสร็จแล้ว!");
-  },2000);
-}
-
-function openModal(type){
-  document.getElementById("modal").style.display="flex";
-  document.getElementById("modalImg").src =
-    type==="skin"?skinImg:fanartImg;
-}
-
-function closeModal(){
-  document.getElementById("modal").style.display="none";
-}
-<script>
 let skinImg = "";
 let fanartImg = "";
 
-// กดปุ่ม "สร้างสกิน 512"
 async function generateSkin(){
-  const loading = document.getElementById("loading");
-  loading.style.display = "block";
-
   const prompt = document.getElementById("prompt").value;
   const name = document.getElementById("name").value;
 
+  if(!prompt){
+    alert("กรุณาใส่ลักษณะสกิน");
+    return;
+  }
+
+  document.getElementById("loading").style.display = "block";
+
   try{
-    const res = await fetch("/api/skin", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
+    const res = await fetch("https://minecraft-skin-ai.onrender.com/api/generate",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json"
       },
-      body: JSON.stringify({
+      body:JSON.stringify({
         prompt: prompt,
         name: name
       })
@@ -214,34 +196,31 @@ async function generateSkin(){
 
     const data = await res.json();
 
-    if(data.image){
-      skinImg = data.image;
-      fanartImg = data.image; // ชั่วคราว ใช้รูปเดียวกันก่อน
-      alert("✅ สร้างสกินจริงสำเร็จ!");
-    }else{
-      alert("❌ AI ไม่ตอบกลับ");
-    }
+    // backend ต้องส่งกลับมาแบบนี้
+    // { skinUrl: "...", fanartUrl: "..." }
 
+    skinImg = data.skinUrl;
+    fanartImg = data.fanartUrl;
+
+    alert("สร้างสกินเสร็จแล้ว!");
   }catch(err){
-    alert("❌ เชื่อมต่อ AI ไม่ได้");
+    alert("เกิดข้อผิดพลาด");
     console.error(err);
   }
 
-  loading.style.display = "none";
+  document.getElementById("loading").style.display = "none";
 }
 
-// เปิดดูรูป
 function openModal(type){
-  document.getElementById("modal").style.display = "flex";
+  document.getElementById("modal").style.display="flex";
   document.getElementById("modalImg").src =
     type === "skin" ? skinImg : fanartImg;
 }
 
-// ปิด modal
 function closeModal(){
-  document.getElementById("modal").style.display = "none";
+  document.getElementById("modal").style.display="none";
 }
 </script>
 
 </body>
-  </html>
+    </html>
