@@ -188,6 +188,59 @@ function openModal(type){
 function closeModal(){
   document.getElementById("modal").style.display="none";
 }
+<script>
+let skinImg = "";
+let fanartImg = "";
+
+// กดปุ่ม "สร้างสกิน 512"
+async function generateSkin(){
+  const loading = document.getElementById("loading");
+  loading.style.display = "block";
+
+  const prompt = document.getElementById("prompt").value;
+  const name = document.getElementById("name").value;
+
+  try{
+    const res = await fetch("/api/skin", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        prompt: prompt,
+        name: name
+      })
+    });
+
+    const data = await res.json();
+
+    if(data.image){
+      skinImg = data.image;
+      fanartImg = data.image; // ชั่วคราว ใช้รูปเดียวกันก่อน
+      alert("✅ สร้างสกินจริงสำเร็จ!");
+    }else{
+      alert("❌ AI ไม่ตอบกลับ");
+    }
+
+  }catch(err){
+    alert("❌ เชื่อมต่อ AI ไม่ได้");
+    console.error(err);
+  }
+
+  loading.style.display = "none";
+}
+
+// เปิดดูรูป
+function openModal(type){
+  document.getElementById("modal").style.display = "flex";
+  document.getElementById("modalImg").src =
+    type === "skin" ? skinImg : fanartImg;
+}
+
+// ปิด modal
+function closeModal(){
+  document.getElementById("modal").style.display = "none";
+}
 </script>
 
 </body>
