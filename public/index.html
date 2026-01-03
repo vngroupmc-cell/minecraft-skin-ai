@@ -1,11 +1,194 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>AI Minecraft Skin</title>
+
+<style>
+:root{
+  --card:#0b1f4a;
+  --bg:#040b22;
+  --btn:#7ddcff;
+  --btn2:#6bbcd6;
+  --text:#ffffff;
+}
+
+*{box-sizing:border-box;font-family:sans-serif}
+
+body{
+  margin:0;
+  min-height:100vh;
+  background:
+    radial-gradient(circle at top, #1b3b8f, var(--bg));
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  color:var(--text);
+}
+
+.card{
+  width:92%;
+  max-width:420px;
+  background:linear-gradient(180deg,#0e2a6d,#08183d);
+  border-radius:26px;
+  padding:28px 22px;
+  box-shadow:0 20px 60px rgba(0,0,0,.5);
+}
+
+h1{
+  margin:0 0 6px;
+  font-size:24px;
+}
+.subtitle{
+  opacity:.85;
+  margin-bottom:18px;
+}
+
+input{
+  width:100%;
+  padding:16px 18px;
+  border-radius:999px;
+  border:none;
+  font-size:15px;
+  margin-bottom:14px;
+  outline:none;
+}
+
+input:focus{
+  box-shadow:0 0 0 3px rgba(125,220,255,.5);
+}
+
+.btn{
+  width:100%;
+  padding:16px;
+  border-radius:999px;
+  border:none;
+  background:linear-gradient(135deg,var(--btn),#9be8ff);
+  font-size:16px;
+  font-weight:bold;
+  cursor:pointer;
+  transition:.25s;
+  margin-top:10px;
+}
+
+.btn.small{background:var(--btn2);font-weight:500}
+
+.btn:hover{
+  transform:translateY(-2px);
+  box-shadow:0 10px 25px rgba(125,220,255,.45);
+}
+
+.divider{
+  height:1px;
+  background:rgba(255,255,255,.15);
+  margin:18px 0;
+}
+
+/* loading */
+.loading{
+  display:none;
+  text-align:center;
+  margin-top:10px;
+}
+.spinner{
+  width:36px;
+  height:36px;
+  border:4px solid rgba(255,255,255,.2);
+  border-top:4px solid #fff;
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+  margin:10px auto;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* modal */
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.7);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  z-index:10;
+}
+.modal-content{
+  background:#08183d;
+  border-radius:20px;
+  padding:20px;
+  width:85%;
+  max-width:320px;
+  text-align:center;
+}
+.modal img{
+  width:100%;
+  border-radius:14px;
+  margin-bottom:10px;
+}
+.close{
+  opacity:.8;
+  cursor:pointer;
+}
+</style>
 </head>
+
 <body>
-<h1>AI Minecraft Skin</h1>
-<p>ถ้าเห็นหน้านี้ แปลว่า Render ทำงานแล้ว 🎉</p>
+
+<div class="card">
+  <h1>🌙 AI Minecraft Skin</h1>
+  <div class="subtitle">พิมพ์ลักษณะสกิน (ภาษาไทย)</div>
+
+  <input id="prompt" placeholder="ผู้ชาย ผมดำ เสื้อฮู้ด"/>
+  <input id="name" placeholder="ชื่อสกิน"/>
+
+  <button class="btn" onclick="generateSkin()">✨ สร้างสกิน 512</button>
+
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    กำลังสร้างสกิน...
+  </div>
+
+  <div class="divider"></div>
+
+  <button class="btn small" onclick="openModal('skin')">👁 ดูสกิน</button>
+  <button class="btn small" onclick="openModal('fanart')">🎨 แฟนอาร์ต</button>
+
+  <div class="divider"></div>
+
+  <button class="btn small">🏅 โหลดสกิน</button>
+  <button class="btn small">🏅 โหลดแฟนอาร์ต</button>
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <img id="modalImg" src="" />
+    <div class="close" onclick="closeModal()">ปิด</div>
+  </div>
+</div>
+
+<script>
+let skinImg = "https://dummyimage.com/512x512/9bdcff/000.png&text=Skin+512";
+let fanartImg = "https://dummyimage.com/512x512/6bbcd6/000.png&text=Fanart";
+
+function generateSkin(){
+  document.getElementById("loading").style.display="block";
+  setTimeout(()=>{
+    document.getElementById("loading").style.display="none";
+    alert("สร้างสกินเสร็จแล้ว!");
+  },2000);
+}
+
+function openModal(type){
+  document.getElementById("modal").style.display="flex";
+  document.getElementById("modalImg").src =
+    type==="skin"?skinImg:fanartImg;
+}
+
+function closeModal(){
+  document.getElementById("modal").style.display="none";
+}
+</script>
+
 </body>
-</html>
+  </html>
